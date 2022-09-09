@@ -1,13 +1,14 @@
 // ==UserScript==
-// @name       teams-custom-reactions
-// @namespace  npm/teams-custom-reactions
-// @version    0.0.0
-// @author     monkey
-// @icon       https://vitejs.dev/logo.svg
-// @match      https://teams.microsoft.com/multi-window/*
+// @name         teams-custom-reactions
+// @namespace    npm/teams-custom-reactions
+// @version      0.0.0
+// @author       monkey
+// @icon         https://vitejs.dev/logo.svg
+// @downloadURL  https://github.com/Woyken/teams-custom-reactions-userscript/raw/gh-pages/teams-custom-reactions.user.js
+// @match        https://teams.microsoft.com/multi-window/*
 // ==/UserScript==
 
-// use vite-plugin-monkey@2.3.1 at 2022-09-09T15:33:46.886Z
+// use vite-plugin-monkey@2.3.1 at 2022-09-09T15:35:02.563Z
 
 ;(({ css = "" }) => {
   const style = document.createElement("style");
