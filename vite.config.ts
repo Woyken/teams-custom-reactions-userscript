@@ -9,7 +9,7 @@ export default defineConfig({
       entry: "src/index.tsx",
       userscript: {
         icon: "https://vitejs.dev/logo.svg",
-        namespace: "npm/vite-plugin-monkey",
+        namespace: "npm/teams-custom-reactions",
         match: ["https://teams.microsoft.com/multi-window/*"],
       },
     }),
