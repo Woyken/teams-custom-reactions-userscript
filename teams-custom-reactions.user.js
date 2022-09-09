@@ -7,7 +7,7 @@
 // @match      https://teams.microsoft.com/multi-window/*
 // ==/UserScript==
 
-// use vite-plugin-monkey@2.3.1 at 2022-09-09T15:30:33.863Z
+// use vite-plugin-monkey@2.3.1 at 2022-09-09T15:33:46.886Z
 
 ;(({ css = "" }) => {
   const style = document.createElement("style");
