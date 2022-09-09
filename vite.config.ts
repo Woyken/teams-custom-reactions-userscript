@@ -11,6 +11,8 @@ export default defineConfig({
         icon: "https://vitejs.dev/logo.svg",
         namespace: "npm/teams-custom-reactions",
         match: ["https://teams.microsoft.com/multi-window/*"],
+        downloadURL:
+          "https://github.com/Woyken/teams-custom-reactions-userscript/raw/gh-pages/teams-custom-reactions.user.js",
       },
     }),
   ],
