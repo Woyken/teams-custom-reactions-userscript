@@ -1,5 +1,5 @@
 import { GM_addElement } from "$";
-import { createQuery } from "@adeora/solid-query";
+import { createMutation, createQuery } from "@adeora/solid-query";
 import {
   Accessor,
   Component,
@@ -8,7 +8,9 @@ import {
   For,
   onCleanup,
   Show,
+  untrack,
 } from "solid-js";
+import { useReactionMutation } from "./api";
 import ReactionsList from "./ReactionsList";
 
 export function log(...args: any) {
@@ -19,23 +21,8 @@ function isInDom(obj: Element) {
   return document.documentElement.contains(obj);
 }
 
-function getCookie(name: string) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()!.split(";").shift();
-}
-
-export function getSkypeToken() {
-  const skypeToken = getCookie("skypetoken_asm");
-  return `skypetoken=${skypeToken}`;
-}
-
 function useCurrentChatId() {
   const [currentChatId, setCurrentChatId] = createSignal<string>();
-
-  // createEffect(() => {
-  //   log("[currentChatId]", currentChatId());
-  // });
 
   createEffect(() => {
     const interval = setInterval(() => {
@@ -52,10 +39,6 @@ function useCurrentChatId() {
 
 function useMessageElements() {
   const [messageElements, setMessageElements] = createSignal<Element[]>([]);
-
-  // createEffect(() => {
-  //   log("[messageElements]", messageElements());
-  // });
 
   createEffect(() => {
     const interval = setInterval(() => {
@@ -74,15 +57,10 @@ function useMessageElements() {
 const App: Component = () => {
   const [customTypesBtn, setCustomTypesBtn] = createSignal<HTMLDivElement>();
 
-  const [emojiOverlayEl, setEmojiOverlayEl] = createSignal<Element>();
-
-  // createEffect(() => {
-  //   log("[emojiOverlayEl]", emojiOverlayEl());
-  // });
-
-  // createEffect(() => {
-  //   log("[customTypesBtn]", customTypesBtn());
-  // });
+  const [emojiOverlayEl, setEmojiOverlayEl] = createSignal(
+    document.querySelector('[data-tid="message-actions-container"]') ??
+      undefined
+  );
 
   createEffect(() => {
     const interval = setInterval(() => {
@@ -123,37 +101,26 @@ const App: Component = () => {
     // https://amer.ng.msg.teams.microsoft.com/v1/users/ME/conversations/19%3A3c482d78-77ad-4278-a83b-39c76e4bbf56_64e9785c-9d09-4a80-8f24-d8eaf14e5b9a%40unq.gbl.spaces/messages/1662635210100/properties?name=emotions&replace=true
   });
 
-  waitForElm('[data-tid="message-actions-container"]')
-    .then(setEmojiOverlayEl)
-    .catch(log);
+  const mutation = useReactionMutation();
+
+  const chatId = useCurrentChatId();
 
   createEffect(() => {
     customTypesBtn()?.parentElement?.removeChild(customTypesBtn()!);
     customTypesBtn()?.addEventListener("click", () => {
-      const result = prompt("enter reaction emoji here:", "🤣");
-      if (!result) return;
+      untrack(() => {
+        const chatId_ = chatId();
+        if (!chatId_) return;
+        const messageId = emojiOverlayEl()?.parentElement?.getAttribute("data-mid");
+        if (!messageId) return;
+        const result = prompt("enter reaction emoji here:", "🤣");
+        if (!result) return;
 
-      const bodyObj = { emotions: { key: result, value: 1662588778832 } };
-
-      fetch(
-        "https://amer.ng.msg.teams.microsoft.com/v1/users/ME/conversations/48%3Anotes/messages/1662584831346/properties?name=emotions",
-        {
-          credentials: "include",
-          headers: {
-            authentication: getSkypeToken(),
-          },
-          body: JSON.stringify(bodyObj),
-          method: "PUT",
-          mode: "cors",
-        }
-      )
-        .then(log)
-        .catch(log);
-
+        mutation.mutate({ chatId: chatId_, messageId, key: result });
+      })
     });
   });
   createEffect(() => {
-    log("emojiOverlayEl exists waiting for it to dissapear", emojiOverlayEl());
     if (!emojiOverlayEl()) return;
     const inter = setInterval(() => {
       if (!isInDom(emojiOverlayEl()!)) setEmojiOverlayEl(undefined);
@@ -190,27 +157,6 @@ const App: Component = () => {
 
 export default App;
 
-function waitForElm(selector: string) {
-  return new Promise<Element>((resolve) => {
-    const initialRes = document.querySelector(selector);
-    if (initialRes) {
-      return resolve(initialRes);
-    }
-
-    const observer = new MutationObserver((mutations) => {
-      const mutationRes = document.querySelector(selector);
-      if (mutationRes) {
-        resolve(mutationRes);
-        observer.disconnect();
-      }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-  });
-}
 function waitForElmLazy(selector: string) {
   return new Promise((resolve) => {
     const observer = new MutationObserver((mutations) => {
